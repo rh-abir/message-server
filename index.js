@@ -24,7 +24,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    
     const usersCollection = client.db("messageDB").collection("users");
 
     app.put("/users/:email", async (req, res) => {
@@ -40,6 +39,20 @@ async function run() {
       const result = await usersCollection.updateOne(query, updateDoc, option);
       // console.log(result);
       res.send(result);
+    });
+
+    app.get("/get-friends/:email", async (req, res) => {
+      const email = req.params.email;
+
+      try{
+        const data = await usersCollection.find().toArray();
+        const filter = data.filter((d) => d.email !== email);
+        res.status(200).send(filter);
+      }
+      catch(erro){
+        console.log(erro)
+      }
+
     });
 
     // Connect the client to the server	(optional starting in v4.7)
