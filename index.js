@@ -25,7 +25,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db("messageDB").collection("users");
+    const messageCollection = client.db("messageDB").collection("message");
+    // const messageUpl
 
+    // put new user in db
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -41,18 +44,27 @@ async function run() {
       res.send(result);
     });
 
+    // get friend without crunt user
     app.get("/get-friends/:email", async (req, res) => {
       const email = req.params.email;
 
-      try{
+      try {
         const data = await usersCollection.find().toArray();
         const filter = data.filter((d) => d.email !== email);
         res.status(200).send(filter);
+      } catch (erro) {
+        console.log(erro);
       }
-      catch(erro){
-        console.log(erro)
-      }
+    });
 
+    app.post("/send-message", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await messageCollection.insertOne({ messageData: data });
+        res.send({ result, messageData: data });
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // Connect the client to the server	(optional starting in v4.7)
