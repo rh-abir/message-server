@@ -73,8 +73,8 @@ async function run() {
 
 
     app.get('/get-message/:fdEmail/:myEmail', async(req, res) => {
-      const myEmail = req.params.myEmail
       const fdEmail = req.params.fdEmail  
+      const myEmail = req.params.myEmail
 
       try{
         let getAllMessage = await messageCollection.find().toArray()
@@ -90,6 +90,18 @@ async function run() {
       // console.log(fdEmail, myEmail)
     })
 
+
+    app.post('/image-message-send', async(req, res) => {
+      try {
+        
+        const data = req.body;
+        const result = await messageCollection.insertOne({ messageData: data });
+        res.send({ result, messageData: {messageData: data} });
+
+      } catch (error) {
+        res.status(500).json({error: {errorMessage: 'Internal server error'}})
+      }
+    })
 
 
 
