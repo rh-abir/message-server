@@ -57,15 +57,43 @@ async function run() {
       }
     });
 
+
+    // storage message in db
     app.post("/send-message", async (req, res) => {
       try {
+        
         const data = req.body;
         const result = await messageCollection.insertOne({ messageData: data });
-        res.send({ result, messageData: data });
+        res.send({ result, messageData: {messageData: data} });
+
       } catch (error) {
-        console.log(error);
+        res.status(500).json({error: {errorMessage: 'Internal server error'}})
       }
     });
+
+
+    app.get('/get-message/:fdEmail/:myEmail', async(req, res) => {
+      const myEmail = req.params.myEmail
+      const fdEmail = req.params.fdEmail  
+
+      try{
+        let getAllMessage = await messageCollection.find().toArray()
+        getAllMessage = getAllMessage?.filter(m=> m.messageData.senderEmail === myEmail &&  m.messageData.reseverEmail === fdEmail || m.messageData.reseverEmail === myEmail && m.messageData.senderEmail === fdEmail)
+         
+        res.send(getAllMessage)
+
+      }
+      catch(error) {
+        res.status(500).json({error: {errorMessage: 'Internal server error'}})
+      }
+
+      // console.log(fdEmail, myEmail)
+    })
+
+
+
+
+
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
