@@ -2,16 +2,12 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const app = express();
 require("dotenv").config();
-// const cors = require("cors");
-const server = require('http').createServer(app);
-
+const cors = require("cors");
 const PORT = process.env.PORT || 5000;
 
-server.prependListener("request", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
- })
+
 //meddileware
-// app.use(cors());
+app.use(cors());
 app.use(express.json());
 
 const uri =
@@ -53,9 +49,11 @@ async function run() {
       const email = req.params.email;
 
       try {
-        const friendGet = await usersCollection.find({
-          email: {$ne: email}
-        }).toArray();
+        const friendGet = await usersCollection
+          .find({
+            email: { $ne: email },
+          })
+          .toArray();
         // const filter = data.filter((d) => d.email !== email);
         res.status(200).send(friendGet);
       } catch (erro) {
@@ -63,73 +61,70 @@ async function run() {
       }
     });
 
-
     // storage message in db
     app.post("/send-message", async (req, res) => {
       try {
-        
         const data = req.body;
         const result = await messageCollection.insertOne({ messageData: data });
-        res.send({ result, messageData: {messageData: data} });
-
+        console.log('message data', data)
+        res.send({ result, messageData: { messageData: data } });
       } catch (error) {
-        res.status(500).json({error: {errorMessage: 'Internal server error'}})
+        res
+          .status(500)
+          .json({ error: { errorMessage: "Internal server error" } });
       }
     });
 
+    // get all message between two friend
+    app.get("/get-message/:fdEmail/:myEmail", async (req, res) => {
+      const fdEmail = req.params.fdEmail;
+      const myEmail = req.params.myEmail;
 
+      try {
+        let getAllMessage = await messageCollection
+          .find({
+            $or: [
+              {
+                $and: [
+                  { "messageData.senderEmail": { $eq: myEmail } },
+                  { "messageData.reseverEmail": { $eq: fdEmail } },
+                ],
+              },
+              {
+                $and: [
+                  { "messageData.senderEmail": { $eq: fdEmail } },
+                  { "messageData.reseverEmail": { $eq: myEmail } },
+                ],
+              },
+            ],
+          })
+          .toArray();
 
-    // get all message between two friend 
-    app.get('/get-message/:fdEmail/:myEmail', async(req, res) => {
-      const fdEmail = req.params.fdEmail  
-      const myEmail = req.params.myEmail
-
-      try{
-
-
-        let getAllMessage = await messageCollection.find({
-          $or:[
-            
-            {
-              $and:[{'messageData.senderEmail': {$eq: myEmail}}, {'messageData.reseverEmail': {$eq: fdEmail}}]
-            },
-            {
-              $and:[{'messageData.senderEmail': {$eq: fdEmail}}, {'messageData.reseverEmail': {$eq: myEmail}}]
-            }
-
-          ]
-        }).toArray()
-        
         // let getAllMessage = await messageCollection.find().toArray()
-        
-        // getAllMessage = getAllMessage?.filter(m=> m.messageData.senderEmail === myEmail &&  m.messageData.reseverEmail === fdEmail || m.messageData.reseverEmail === myEmail && m.messageData.senderEmail === fdEmail)
-         
-        res.send(getAllMessage)
 
-      }
-      catch(error) {
-        res.status(500).json({error: {errorMessage: 'Internal server error'}})
+        // getAllMessage = getAllMessage?.filter(m=> m.messageData.senderEmail === myEmail &&  m.messageData.reseverEmail === fdEmail || m.messageData.reseverEmail === myEmail && m.messageData.senderEmail === fdEmail)
+
+        res.send(getAllMessage);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: { errorMessage: "Internal server error" } });
       }
 
       // console.log(fdEmail, myEmail)
-    })
+    });
 
-
-    app.post('/image-message-send', async(req, res) => {
+    app.post("/image-message-send", async (req, res) => {
       try {
-        
         const data = req.body;
         const result = await messageCollection.insertOne({ messageData: data });
-        res.send({ result, messageData: {messageData: data} });
-
+        res.send({ result, messageData: { messageData: data } });
       } catch (error) {
-        res.status(500).json({error: {errorMessage: 'Internal server error'}})
+        res
+          .status(500)
+          .json({ error: { errorMessage: "Internal server error" } });
       }
-    })
-
-
-
-
+    });
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
@@ -150,6 +145,6 @@ app.get("/", (req, res) => {
   res.json("message is ok ");
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`message server is runnig ${PORT}`);
 });
