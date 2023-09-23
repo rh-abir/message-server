@@ -4,7 +4,7 @@ const app = express();
 require("dotenv").config();
 const cors = require("cors");
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 
 //meddileware
 app.use(cors());
@@ -49,9 +49,11 @@ async function run() {
       const email = req.params.email;
 
       try {
-        const data = await usersCollection.find().toArray();
-        const filter = data.filter((d) => d.email !== email);
-        res.status(200).send(filter);
+        const friendGet = await usersCollection.find({
+          email: {$ne: email}
+        }).toArray();
+        // const filter = data.filter((d) => d.email !== email);
+        res.status(200).send(friendGet);
       } catch (erro) {
         console.log(erro);
       }
@@ -72,13 +74,31 @@ async function run() {
     });
 
 
+
+    // get all message between two friend 
     app.get('/get-message/:fdEmail/:myEmail', async(req, res) => {
       const fdEmail = req.params.fdEmail  
       const myEmail = req.params.myEmail
 
       try{
-        let getAllMessage = await messageCollection.find().toArray()
-        getAllMessage = getAllMessage?.filter(m=> m.messageData.senderEmail === myEmail &&  m.messageData.reseverEmail === fdEmail || m.messageData.reseverEmail === myEmail && m.messageData.senderEmail === fdEmail)
+
+
+        let getAllMessage = await messageCollection.find({
+          $or:[
+            
+            {
+              $and:[{'messageData.senderEmail': {$eq: myEmail}}, {'messageData.reseverEmail': {$eq: fdEmail}}]
+            },
+            {
+              $and:[{'messageData.senderEmail': {$eq: fdEmail}}, {'messageData.reseverEmail': {$eq: myEmail}}]
+            }
+
+          ]
+        }).toArray()
+        
+        // let getAllMessage = await messageCollection.find().toArray()
+        
+        // getAllMessage = getAllMessage?.filter(m=> m.messageData.senderEmail === myEmail &&  m.messageData.reseverEmail === fdEmail || m.messageData.reseverEmail === myEmail && m.messageData.senderEmail === fdEmail)
          
         res.send(getAllMessage)
 
