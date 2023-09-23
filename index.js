@@ -2,12 +2,16 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const cors = require("cors");
+// const cors = require("cors");
+const server = require('http').createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
+server.prependListener("request", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+ })
 //meddileware
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 const uri =
@@ -146,6 +150,6 @@ app.get("/", (req, res) => {
   res.json("message is ok ");
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`message server is runnig ${PORT}`);
 });
