@@ -10,8 +10,12 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  "mongodb+srv://rhabir71:Gqp4RCfkj7JAmt5J@cluster0.w4fbivq.mongodb.net/?retryWrites=true&w=majority";
+// const uri =
+//   "mongodb+srv://rhabir71:Gqp4RCfkj7JAmt5J@cluster0.w4fbivq.mongodb.net/?retryWrites=true&w=majority";
+
+const uri = "mongodb+srv://rhabir99:llKMY9ioOqAMwYTU@cluster0.nk1gdh2.mongodb.net/?retryWrites=true&w=majority"
+
+
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -32,7 +36,7 @@ async function run() {
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
-      // console.log(email, user);
+      console.log(email, user);
       const option = { upsert: true };
       const query = { email: email };
       const updateDoc = {
